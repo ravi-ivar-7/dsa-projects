@@ -1,0 +1,51 @@
+#include <iostream>
+#include <queue>
+#include <unordered_map>
+using namespace std;
+
+struct Node {
+    char ch;
+    int freq;
+    Node *left, *right;
+    Node(char c, int f) : ch(c), freq(f), left(nullptr), right(nullptr) {}
+};
+
+struct Compare {
+    bool operator()(Node* a, Node* b) {
+        return a->freq > b->freq;
+    }
+};
+
+void buildCodes(Node* root, string code, unordered_map<char, string>& codes) {
+    if (!root) return;
+    if (!root->left && !root->right) codes[root->ch] = code;
+    buildCodes(root->left, code + "0", codes);
+    buildCodes(root->right, code + "1", codes);
+}
+
+void huffmanCoding(string data) {
+    unordered_map<char, int> freq;
+    for (char c : data) freq[c]++;
+    priority_queue<Node*, vector<Node*>, Compare> pq;
+    for (auto [c, f] : freq) pq.push(new Node(c, f));
+
+    while (pq.size() > 1) {
+        Node *left = pq.top(); pq.pop();
+        Node *right = pq.top(); pq.pop();
+        Node *merged = new Node('\0', left->freq + right->freq);
+        merged->left = left; merged->right = right;
+        pq.push(merged);
+    }
+
+    Node* root = pq.top();
+    unordered_map<char, string> codes;
+    buildCodes(root, "", codes);
+    for (auto [c, code] : codes)
+        cout << c << ": " << code << endl;
+}
+
+int main() {
+    string text = "huffman compression code";
+    huffmanCoding(text);
+    return 0;
+}
